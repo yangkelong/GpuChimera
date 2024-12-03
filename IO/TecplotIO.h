@@ -8,10 +8,6 @@ public:
     TecplotIO();
     void readMesh();
     void constructIdNodes();
-    unsigned getNbNode();
-    unsigned getNbElMsh();
-    unsigned getNbElm();
-    string getFname();
     vector<Point> & getCoordNodes();
     vector<NodeIdent> & getIdNodes();
     vector<NodeIdentMsh> & getIdNodesMsh();

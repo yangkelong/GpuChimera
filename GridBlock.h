@@ -30,4 +30,7 @@ public:
     int readMesh(const char *);
     ~Block();
 
+    /*  需要将四边形 facet 切分为 triangle facet
+        并构建切分后的 拓扑
+    */
 };

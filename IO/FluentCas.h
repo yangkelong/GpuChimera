@@ -1,5 +1,5 @@
-#define PROGRAM_ONCE
-#include "Common.h"
+#pragma once
+#include "../Common.h"
 
 class CasReader{
 
