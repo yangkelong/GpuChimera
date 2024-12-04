@@ -82,6 +82,7 @@ struct Cell {
         delete []face_ctn_vertex_adjncy;
         delete []bc_faces;
         delete []interior_faces;
+        delete []cells_iblank;
     }
 
 // 网格读取成功返回0
@@ -246,13 +247,14 @@ int Block::readMesh(const char *meshfilename){
                 std::cout << "Total grid cells:" << std::setw(8) << last_index << std::endl;
                 cell_num = last_index;
                 cellSet.resize(cell_num + 1);
+                cells_iblank = new int[cell_num + 1];
                 assert(cell_num == tet_num + pyramid_num + wedge_num + hex_num);
-                cell_ctn_vertex_xadj = new uint32[cell_num+2];
-                cell_ctn_vertex_adjncy = new uint32 [tet_num*4 + pyramid_num*5 + wedge_num*6 + hex_num*8 + 1];
-                cell_ctn_face_adjncy = new uint32 [tet_num*4 + pyramid_num*5 + wedge_num*6 + hex_num*8 + 1];
-                cell_adj_cell_adjncy = new uint32 [tet_num*4 + pyramid_num*5 + wedge_num*6 + hex_num*8 + 1];
-                cell_adj_cell_xadj = new uint32[cell_num+2];
-                cell_ctn_face_xadj = new uint32[cell_num+2];
+                cell_ctn_vertex_xadj = new uint32[cell_num + 2];
+                cell_ctn_vertex_adjncy = new uint32[tet_num * 4 + pyramid_num * 5 + wedge_num * 6 + hex_num * 8 + 1];
+                cell_ctn_face_adjncy = new uint32[tet_num * 4 + pyramid_num * 5 + wedge_num * 6 + hex_num * 8 + 1];
+                cell_adj_cell_adjncy = new uint32[tet_num * 4 + pyramid_num * 5 + wedge_num * 6 + hex_num * 8 + 1];
+                cell_adj_cell_xadj = new uint32[cell_num + 2];
+                cell_ctn_face_xadj = new uint32[cell_num + 2];
                 cell_ctn_face_xadj[1] = 1;
                 cell_adj_cell_xadj[1] = 1;
                 cell_ctn_vertex_xadj[1] = 1;
