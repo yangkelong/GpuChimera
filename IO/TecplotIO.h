@@ -6,27 +6,12 @@ class TecplotIO{
 public:
 
     TecplotIO();
-    void readMesh();
-    void constructIdNodes();
-    vector<Point> & getCoordNodes();
-    vector<NodeIdent> & getIdNodes();
-    vector<NodeIdentMsh> & getIdNodesMsh();
-    TecplotIO* setNbNode(unsigned);
-    TecplotIO* setNbElMsh(unsigned);
-    TecplotIO* setNbElm(unsigned);
-    TecplotIO* setFileName(std::string);
-    void writeLine();  // 线
+    void writeLineSegment(std::vector<Point> &points, bool independent_out=false, std::string file_name="");  // 线
     void writeFace();  // 面
-    void writeBlock();  // 体
-
+    // 均以多面体方式写出
+    void writeBlocks();  // 体
+    std::ofstream *f_handle_;
 private:
     TecplotIO(const TecplotIO &TecplotIO);  // override default copy constructor
     TecplotIO & operator = (const TecplotIO &TecplotIO);  // and assignment operator
-    unsigned nbNode;
-    unsigned nbElMsh;
-    unsigned nbElm;
-    std::string fName;
-    std::vector<Point> coordNodes;
-    std::vector<NodeIdent> idNodes;
-    std::vector<NodeIdentMsh> idNodesMsh;
 }
