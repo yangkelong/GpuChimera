@@ -15,4 +15,3 @@ public:
 private:
     TecplotIO(const TecplotIO &TecplotIO);  // override default copy constructor
     TecplotIO & operator = (const TecplotIO &TecplotIO);  // and assignment operator
-}

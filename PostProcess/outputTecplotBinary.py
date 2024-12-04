@@ -260,6 +260,7 @@ class TecplotIO:
             left_elems = self.left_elems
             right_elems = self.right_elems
             face_node_counts = self.face_node_counts
+            # 创建 zone
             create_poly_zone(str(zone_name), ZONETYPE_FEPOLYHEDRON, num_nodes, num_elements, num_faces,
                              total_num_face_nodes, value_locations=data["valueLocation"])
             # 写入 坐标
@@ -268,6 +269,7 @@ class TecplotIO:
             # 写入 流场数据
             fluidData = data['vars']
             zone_write_arr(data['vars'], self.VIsDouble)
+            # facet 数目, facet 包含顶点个数数组, facet 包含顶点索引数组, facet 左右网格单元索引
             tecpolyface(num_faces, face_node_counts, face_nodes, left_elems, right_elems)
         # 边界数据, 每个边界作为单独的zone输出
         # 需要更改, 如果流场数据按zone分开输出，当前 zones只有一个zone，整个流场数据只包含在一个zone中
