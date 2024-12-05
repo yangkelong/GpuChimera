@@ -6,6 +6,7 @@ class Block{
 public:
     int vertex_num, face_num, cell_num;
     int tet_num, pyramid_num, wedge_num, hex_num;
+    int *cells_iblank;
     // 索引均保持 1-based
     float64 *vertex_coord;
     // 面单元与顶点拓扑

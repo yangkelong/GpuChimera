@@ -20,21 +20,21 @@ int main(int argc, char *argv[]) {
     gdt::printVec(point_3);
 
 
-    // 定义点
+    // �����
     Point_3 p1(0, 0, 0);
     Point_3 p2(1, 0, 0);
     Point_3 p3(0, 1, 0);
     Point_3 start_point(0.15, 0.25, -1);
     Point_3 end_point(0.25, 0.15, 1);
-    // 定义线段和三角形
+    // �����߶κ�������
     Segment_3 seg(start_point, end_point);
     Triangle_3 tri(p1, p2, p3);
 
-    // 求交
+    // ��
     CGAL::cpp11::result_of<K::Intersect_3(Segment_3, Triangle_3)>::type
         result = CGAL::intersection(seg, tri);
 
-    // 检查交点并输出
+    // ��齻�㲢���
     if (result) {
         if (const Point_3* p = boost::get<Point_3>(&*result)) {
             std::cout << "Intersection point: " << *p << std::endl;
@@ -48,21 +48,21 @@ int main(int argc, char *argv[]) {
     }
     using Eigen::Matrix;
     using Eigen::Vector;
-    // 创建一个 2x2 的矩阵
+    // ����һ�� 2x2 �ľ���
     Matrix<int, 2, 2> mat;
     mat << 1, 2, 3, 4;
     std::cout << "Matrix:\n" << mat << std::endl;
 
-    // 创建一个 2D 向量
+    // ����һ�� 2D ����
     Vector<float, 2> vec(99.9, 88.8);
     std::cout << "Vector:\n" << vec << std::endl;
 
-    // 动态大小的矩阵，使用列表初始化
+    // ��̬��С�ľ���ʹ���б��ʼ��
     Eigen::MatrixXi  dymat(2, 3);
     dymat << 1, 2, 3, 4, 5, 6;
     std::cout << "Dynamic matrix:\n" << dymat << std::endl;
 
-    // 矩阵乘法
+    // ����˷�
     Eigen::VectorXi res = mat * Eigen::VectorXi::LinSpaced(2, 1, 2);
     std::cout << "Matrix-vector multiplication result:\n" << res << std::endl;
 
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     INTEGER4 Debug = 0;
     INTEGER4 VIsDouble = 1;
     INTEGER4 res_code = 0;                      /* use to check return codes */
-    // 初始化
+    // ��ʼ��
     res_code = TECINI142((char *)"Pyramid",     /* Data Set Title */
                   (char *)"X Y Z",       /* Variable List */
                   (char *)"pyramid.plt", /* File Name */
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
     INTEGER4 NumFaceNodes = 16;
     INTEGER4 NumBConns = 0; /* No Boundary Connections */
     INTEGER4 NumBItems = 0; /* No Boundary Items */
-    // 创建zone
+    // ����zone
     res_code = TECZNE142((char *)"Polyhedral Zone (Octahedron)", &ZoneType, &NumNodes, &NumElems, &NumFaces,
                   &ICellMax, &JCellMax, &KCellMax, &SolTime, &StrandID, &ParentZone, &IsBlock,
                   &NFConns, &FNMode, &NumFaceNodes, &NumBConns, &NumBItems, PassiveVarArray,
@@ -200,12 +200,12 @@ int main(int argc, char *argv[]) {
      * Your right thumb will point towards the right element; the
      * element on the other side of your hand is the left element.
      *
-     * The number zero is used to indicate that there isn’t an
+     * The number zero is used to indicate that there isn��t an
      * element on that side of the face.
      *
      * Because of the way we numbered the nodes and faces, the
      * right element for every face is the element itself
-     * (element 1) and the left element is “no-neighboring element"
+     * (element 1) and the left element is ��no-neighboring element"
      * (element 0).
      */
     INTEGER4 *FaceLeftElems = new INTEGER4[NumFaces];

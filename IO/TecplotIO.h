@@ -1,10 +1,11 @@
 #pragma once
-#include "Common.h"
+#include "../Mesh/Block.h"
+#include "../Common.h"
 
 
 class TecplotIO{
 public:
-
+    std::vector<Block*> blocks_ptr;
     TecplotIO();
     void writeLineSegment(std::vector<Point> &points, bool independent_out=false, std::string file_name="");  // 线
     void writeFace();  // 面
@@ -14,4 +15,3 @@ public:
 private:
     TecplotIO(const TecplotIO &TecplotIO);  // override default copy constructor
     TecplotIO & operator = (const TecplotIO &TecplotIO);  // and assignment operator
-}
