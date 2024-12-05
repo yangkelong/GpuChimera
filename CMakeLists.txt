@@ -37,13 +37,13 @@ include_directories(${PROJECT_SOURCE_DIR}/external/boost_1_78_0)
 set(cgal_dir ${PROJECT_SOURCE_DIR}/external/cgal-5.6.1/)
 include_directories(${cgal_dir}/include)
 
-
+include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/IO)
 # 添加可执行文件
 add_executable(my_target 
   main.cpp
-  Common.h
-  GridBlock.h
-  GridBlock.cpp)
+  GridBlock.cpp
+  IO/TecplotIO.cpp
+  )
 
 # 设置 TECIO 库的安装目录
 # 在 Windows 系统中，路径分隔符应使用正斜杠 / 或双反斜杠 \\，而不是单反斜杠 \
@@ -53,9 +53,9 @@ set(TECIO_DIR ${PROJECT_SOURCE_DIR}/external/tecio/)
 # 注意：这里假设库文件在 TECIO_DIR/lib 目录下，并且库文件名为 tecio.lib（Windows）或 libtecio.a（Linux）
 find_library(tecio_LIBRARY NAMES tecio PATHS ${TECIO_DIR}/lib NO_DEFAULT_PATH)
 # 为目标添加包含目录
-target_include_directories(my_target PRIVATE ${TECIO_DIR}/include)
+target_include_directories(my_target PUBLIC ${TECIO_DIR}/include)
 # 链接 TECIO 库
-target_link_libraries(my_target PRIVATE 
+target_link_libraries(my_target PUBLIC 
 	${tecio_LIBRARY} 
 	gdt
 	)
@@ -65,7 +65,7 @@ if(WIN32)
     # auxiliary\gmp\lib
     set(gmp_dir ${cgal_dir}/auxiliary/gmp/)
     include_directories(${gmp_dir}/include)
-    target_link_libraries(my_target PRIVATE 
+    target_link_libraries(my_target PUBLIC 
       ${gmp_dir}/lib/libgmp-10.lib
       ${gmp_dir}/lib/libmpfr-4.lib
       )

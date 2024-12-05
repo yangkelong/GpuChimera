@@ -89,8 +89,6 @@ int Block::readMesh(const char *meshfilename){
     uint32 *faceCtnVertexAdjncy;
     uint32 n0, n1, n2, n3, c0, c1;
     uint32 faceCtnVertex[4];
-    uint32 faceSize = 0;
-    uint32 cell_num = 0;
     std::vector<FaceType> FaceTypeSet;
     std::vector<VolumeType> VolumeZoneSet;
     std::vector<Cell> cellSet;
@@ -610,10 +608,13 @@ int Block::readMesh(const char *meshfilename){
         if (face_side_cell[faceNo * 2 + 1] != 0)
             return -3;
     }
+    // 
     const int var = face_ctn_vertex_xadj[face_num + 1];
     face_ctn_vertex_adjncy = new uint32 [var];
-    for (int i = 0; i < var; ++i)
-        face_ctn_vertex_adjncy[i] = faceCtnVertexAdjncy[i];
+    for (int i = 0; i < var; ++i){
+        face_ctn_vertex_adjncy[i] =faceCtnVertexAdjncy[i];
+        // std::cout<<"?????"<<faceCtnVertexAdjncy[i]<<std::endl;
+    }
     delete []faceCtnVertexAdjncy;
     return 0;
 }
