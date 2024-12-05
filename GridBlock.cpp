@@ -35,9 +35,8 @@ struct Cell {
 		if (cellNo == 0)
 			return;
 		const uint32 tmpN = this->ctnVertexNum;
-		bool found;
 		for (uint32 i = 0; i < n; ++i) {
-			found = false;
+			bool found = false;
 			for (uint32 j = 0; j < tmpN; ++j) {
 				if (vertexArr[i] == ctnVertexNo[j]) {
 					found = true;

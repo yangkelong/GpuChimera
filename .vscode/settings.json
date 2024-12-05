@@ -83,6 +83,26 @@
         "stop_token": "cpp",
         "thread": "cpp",
         "typeindex": "cpp",
-        "pointers": "cpp"
+        "pointers": "cpp",
+        "any": "cpp",
+        "cfenv": "cpp",
+        "cinttypes": "cpp",
+        "codecvt": "cpp",
+        "complex": "cpp",
+        "condition_variable": "cpp",
+        "coroutine": "cpp",
+        "csetjmp": "cpp",
+        "cwctype": "cpp",
+        "execution": "cpp",
+        "filesystem": "cpp",
+        "future": "cpp",
+        "memory_resource": "cpp",
+        "scoped_allocator": "cpp",
+        "shared_mutex": "cpp",
+        "source_location": "cpp",
+        "strstream": "cpp",
+        "valarray": "cpp",
+        "variant": "cpp",
+        "*.ipp": "cpp"
     }
 }
