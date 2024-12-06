@@ -43,6 +43,8 @@ add_executable(my_target
   main.cpp
   GridBlock.cpp
   IO/TecplotIO.cpp
+  DonorSearch.cpp
+  DonorSearch.h
   )
 
 # 设置 TECIO 库的安装目录

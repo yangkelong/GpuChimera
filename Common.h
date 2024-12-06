@@ -18,6 +18,11 @@
 #include <algorithm>
 // #include <string>
 
+#include "gdt/math/vec.h"
+
+
+
+
 using uint32 = unsigned int;
 using int64 = long long;
 using float64 = double;
@@ -38,3 +43,13 @@ using Coord = std::array<double, 3>;
 // typedef std::vector<uint32> mylist;
 // typedef std::vector<double> mylistDouble;
 
+class CSR{
+public:
+// 1-based
+    uint32 *xadj;  // 
+    uint32 *adjncy;
+    uint32 item_num;
+    CSR(){}
+    ~CSR(){
+    }
+};

@@ -64,25 +64,32 @@ struct Cell {
 	}
 };
 
-    Block::Block(const char *file_name){
-        readMesh(file_name);
-    }
+Block::Block(const char *file_name){
+    readMesh(file_name);
+    buildTriFacetArray();
+    std::cout << "calCellCenter: 111" << std::endl;
+    calCellCenter();
+}
 
-    Block::~Block(){
-        delete []vertex_coord;
-        delete []face_side_cell;
-        delete []cell_ctn_vertex_xadj;
-        delete []cell_ctn_vertex_adjncy;
-        delete []cell_adj_cell_xadj;
-        delete []cell_adj_cell_adjncy;
-        delete []cell_ctn_face_xadj;
-        delete []cell_ctn_face_adjncy;
-        delete []face_ctn_vertex_xadj;
-        delete []face_ctn_vertex_adjncy;
-        delete []bc_faces;
-        delete []interior_faces;
-        delete []cells_iblank;
-    }
+Block::~Block(){
+    delete []vertex_coord;
+    delete []face_side_cell;
+    delete []cell_ctn_vertex_xadj;
+    delete []cell_ctn_vertex_adjncy;
+    delete []cell_adj_cell_xadj;
+    delete []cell_adj_cell_adjncy;
+    delete []cell_ctn_face_xadj;
+    delete []cell_ctn_face_adjncy;
+    delete []face_ctn_vertex_xadj;
+    delete []face_ctn_vertex_adjncy;
+    delete []bc_faces;
+    delete []interior_faces;
+    delete []cells_iblank;
+    delete []tri_facet_array;
+    delete []cell_ctn_triface_xadj;
+    delete []cell_ctn_triface_adjncy;
+    delete []cells_center;
+}
 
 // 网格读取成功返回0
 int Block::readMesh(const char *meshfilename){
@@ -205,7 +212,7 @@ int Block::readMesh(const char *meshfilename){
             {
                 std::cout << "Total grid vertexs:" << std::setw(8) << last_index << std::endl;
                 vertex_num = last_index;
-                vertex_coord = new float64[3*(vertex_num+1)];
+                vertex_coord = new Point[vertex_num+1];
             }
             // 每个zone的网格点信息
             if (zone_id != 0)
@@ -215,7 +222,8 @@ int Block::readMesh(const char *meshfilename){
                 } while (ch != '(');
                 for (iVertex = first_index; iVertex <= last_index; iVertex++){
                     // 读网格点坐标
-                    file_handle >> std::dec >> vertex_coord[iVertex * 3] >> vertex_coord[iVertex * 3 + 1] >> vertex_coord[iVertex * 3 + 2];
+                    Point &cur_point = vertex_coord[iVertex];
+                    file_handle >> std::dec >> cur_point.x >> cur_point.y >> cur_point.z;
                 }
                 do
                 {
@@ -248,8 +256,8 @@ int Block::readMesh(const char *meshfilename){
                 assert(cell_num == tet_num + pyramid_num + wedge_num + hex_num);
                 cell_ctn_vertex_xadj = new uint32[cell_num + 2];
                 cell_ctn_vertex_adjncy = new uint32[tet_num * 4 + pyramid_num * 5 + wedge_num * 6 + hex_num * 8 + 1];
-                cell_ctn_face_adjncy = new uint32[tet_num * 4 + pyramid_num * 5 + wedge_num * 6 + hex_num * 8 + 1];
-                cell_adj_cell_adjncy = new uint32[tet_num * 4 + pyramid_num * 5 + wedge_num * 6 + hex_num * 8 + 1];
+                cell_ctn_face_adjncy = new uint32[tet_num * 4 + pyramid_num * 5 + wedge_num * 5 + hex_num * 6 + 1];
+                cell_adj_cell_adjncy = new uint32[tet_num * 4 + pyramid_num * 5 + wedge_num * 5 + hex_num * 6 + 1];
                 cell_adj_cell_xadj = new uint32[cell_num + 2];
                 cell_ctn_face_xadj = new uint32[cell_num + 2];
                 cell_ctn_face_xadj[1] = 1;
@@ -305,7 +313,7 @@ int Block::readMesh(const char *meshfilename){
                 } while (ch != ')');
                 std::cout << "Total grid faces:" << std::setw(8) << last_index << std::endl;
                 face_num = last_index;
-                face_side_cell = new uint32[2*(face_num + 1)];
+                face_side_cell = new gdt::vec2ui[face_num + 1];
                 face_ctn_vertex_xadj = new uint32[face_num + 2];
                 faceCtnVertexAdjncy = new uint32[face_num*4 + 1];
                 face_ctn_vertex_xadj[1] = 1;
@@ -345,8 +353,8 @@ int Block::readMesh(const char *meshfilename){
                         faceCtnVertexAdjncy[tmpIndex] = faceCtnVertex[2];
                         faceCtnVertexAdjncy[tmpIndex + 1] = faceCtnVertex[1];
                         faceCtnVertexAdjncy[tmpIndex + 2] = faceCtnVertex[0];
-                        face_side_cell[iFace * 2] = c0;
-                        face_side_cell[iFace * 2 + 1] = c1;
+                        face_side_cell[iFace].x = c0;
+                        face_side_cell[iFace].y = c1;
                         cellSet[c0].addVertex(3, faceCtnVertex);
                         cellSet[c0].addFace(iFace);
                         cellSet[c0].addAdjCell(c1);
@@ -363,8 +371,8 @@ int Block::readMesh(const char *meshfilename){
                         faceCtnVertexAdjncy[tmpIndex + 1] = faceCtnVertex[2];
                         faceCtnVertexAdjncy[tmpIndex + 2] = faceCtnVertex[1];
                         faceCtnVertexAdjncy[tmpIndex + 3] = faceCtnVertex[0];
-                        face_side_cell[iFace * 2] = c0;
-                        face_side_cell[iFace * 2 + 1] = c1;
+                        face_side_cell[iFace].x = c0;
+                        face_side_cell[iFace].y = c1;
                         cellSet[c0].addVertex(4, faceCtnVertex);
                         cellSet[c0].addFace(iFace);
                         cellSet[c0].addAdjCell(c1);
@@ -498,8 +506,7 @@ int Block::readMesh(const char *meshfilename){
     }
     file_handle.close();
     // cellCtnVertex, cellCtnFace, cellAdjCell
-    for (uint32 cellNo = 1; cellNo <= cell_num; ++cellNo)
-    {
+    for (uint32 cellNo = 1; cellNo <= cell_num; ++cellNo) {
         Cell &cell = cellSet[cellNo];
         // build cellCtnVertex
         uint32 tmpIndex = cell_ctn_vertex_xadj[cellNo];
@@ -605,7 +612,7 @@ int Block::readMesh(const char *meshfilename){
     for (index = 0; index < bcFaceSize; ++index)
     {
         uint32 faceNo = bc_faces[index];
-        if (face_side_cell[faceNo * 2 + 1] != 0)
+        if (face_side_cell[faceNo].y != 0)
             return -3;
     }
     // 
@@ -618,3 +625,90 @@ int Block::readMesh(const char *meshfilename){
     delete []faceCtnVertexAdjncy;
     return 0;
 }
+
+void Block::calCellCenter(){
+    std::cout<<"calCellCenter: "<< std::endl;
+    cells_center = new Point[cell_num+1];
+    for(uint32 cell_id=1; cell_id<=cell_num; ++cell_id){
+        int count = 0;
+        Point &cell_center = cells_center[cell_id];
+        for(int i=0; i<3; ++i)
+            cell_center[i] = 0.;
+        for(uint32 i=cell_ctn_vertex_xadj[cell_id]; i<cell_ctn_vertex_xadj[cell_id+1]; ++i){
+            const int vertex_id = cell_ctn_vertex_adjncy[i];
+            cell_center += vertex_coord[vertex_id];
+            count += 1;
+        }
+        cell_center /= count;
+        std::cout<<"cell_id: "<< cell_id;
+        gdt::printVec(cell_center);
+    }
+}
+
+void Block::buildTriFacetArray(){
+    tri_facet_num = 0;
+    for(uint32 parent_facet_id=1; parent_facet_id<=face_num; ++parent_facet_id){
+        const uint32 num = face_ctn_vertex_xadj[parent_facet_id+1]-face_ctn_vertex_xadj[parent_facet_id];
+        assert(num==3 || num==4);
+        tri_facet_num += num==4 ? 2 : 1;
+    }
+    tri_facet_array = new TriFacet[tri_facet_num+1];
+    uint32 tri_facet_id = 1;
+    std::vector<std::vector<uint32>> parent_facet2tri_facet(face_num+1);
+    for(uint32 parent_facet_id=1; parent_facet_id<=face_num; ++parent_facet_id){
+        uint32 index_start = face_ctn_vertex_xadj[parent_facet_id];  // face_ctn_vertex_adjncy 's index
+        const uint32 index_end = face_ctn_vertex_xadj[parent_facet_id + 1] -1;
+        const uint32 point2_id = face_ctn_vertex_adjncy[index_end];
+        const Point &p2 = vertex_coord[point2_id];
+        const uint32 tri_facet_count = index_end - index_start -1;
+        assert(tri_facet_count==1 || tri_facet_count==2);
+        for(uint32 i=0; i<tri_facet_count; ++i){
+            index_start += i;
+            uint32 point0_id = face_ctn_vertex_adjncy[index_start];
+            uint32 point1_id = face_ctn_vertex_adjncy[index_start+1];
+            Point &p0 = vertex_coord[point0_id];
+            Point &p1 = vertex_coord[point1_id];
+            TriFacet &tri_facet = tri_facet_array[tri_facet_id];
+            tri_facet.id = tri_facet_id;
+            tri_facet.parent_facet_id = parent_facet_id;  // 原始面元id
+            parent_facet2tri_facet[parent_facet_id].push_back(tri_facet_id);
+            if(tri_facet_count==2){
+                tri_facet.have_twin = true;
+                tri_facet.twin_facet_id = i==0 ? (tri_facet_id+1) : (tri_facet_id-1);
+            }
+            tri_facet.index[0] = point0_id;
+            tri_facet.index[1] = point1_id;
+            tri_facet.index[2] = point2_id;
+            tri_facet.normal = gdt::cross(p1-p0, p2-p0);
+            //std::cout<<"tri_facet_id"<<tri_facet_id<<std::endl;
+            tri_facet_id += 1;
+        }
+    }
+    std::cout << "tri_facet_num:" << tri_facet_num <<", "<<tri_facet_id<< std::endl;
+    assert(tri_facet_num == (tri_facet_id-1));
+    // 构建 cell_ctn_triface_xadj    cell_ctn_triface_adjncy
+    cell_ctn_triface_xadj = new uint32[cell_num+2]; 
+    cell_ctn_triface_xadj[1] = 1;
+    cell_ctn_triface_adjncy = new uint32[tet_num * 4 + pyramid_num * 6 + wedge_num * 8 + hex_num * 12 + 1];
+    for (uint32 cell_id = 1; cell_id <= cell_num; ++cell_id) {
+        uint32 tmp_idx = cell_ctn_triface_xadj[cell_id];
+        for (uint32 i = cell_ctn_face_xadj[cell_id]; i < cell_ctn_face_xadj[cell_id + 1]; ++i){
+            const uint32 parent_facet_id = cell_ctn_face_adjncy[i];
+            for(uint32 tri_facet_id:parent_facet2tri_facet[parent_facet_id]){
+                cell_ctn_triface_adjncy[tmp_idx] = tri_facet_id;
+                tmp_idx += 1;
+            }
+        }
+        cell_ctn_triface_xadj[cell_id + 1] = tmp_idx;
+    }
+    std::cout<<"buildTriFacetArray done!"<<std::endl;
+}
+
+void Block::getCellTriFacet(uint32 cell_id, std::set<uint32>&facet_set) const{
+    facet_set.clear();
+    for(uint32 i=cell_ctn_triface_xadj[cell_id]; i<cell_ctn_triface_xadj[cell_id+1]; ++i)
+        facet_set.insert(cell_ctn_triface_adjncy[i]);
+}
+
+
+

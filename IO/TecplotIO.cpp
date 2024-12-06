@@ -4,26 +4,18 @@
 
 
 // 即输出一系列点
-// void TecplotIO::writeLineSegment(std::vector<Point> &points, std::string file_name){
-//     std::ofstream* f_handle = nullptr;
-//     std::string zone_name;
-//     if(independent_out){
-//         f_handle = new std::ofstream(file_name);
-//     }
-//     else
-//         f_handle = f_handle_;
-//     (*f_handle)<< "VARIABLES=\"X\",\"Y\",\"Z\" \n";
-//     (*f_handle)<< "ZONE T=\""<< zone_name << "\", I=" << points.size() << ", "<<"DATAPACKING=POINT\n";
-//     (*f_handle)<<std::setprecision(16)<<std::scientific;
-//     for(const auto& point: points){
-//         (*f_handle)<< point.x << "  " << point.y <<"  " <<  point.z <<"\n";
-//     }
-//     (*f_handle).flush();
-//     if(independent_out){
-//         f_handle->close();
-//         delete f_handle;
-//     }
-// }
+void TecplotIO::writeLineSegment(const std::string &file_name, const std::vector<Block::Point> &points){
+    std::ofstream f_handle(file_name);
+    std::string zone_name("Line_zone");
+    f_handle<< "VARIABLES=\"X\",\"Y\",\"Z\" \n";
+    f_handle<< "ZONE T=\""<< zone_name << "\", I=" << points.size() << ", "<<"DATAPACKING=POINT\n";
+    f_handle<<std::setprecision(16)<<std::scientific;
+    for(const auto& point: points){
+        f_handle<< point.x << "  " << point.y <<"  " <<  point.z <<"\n";
+    }
+    f_handle.flush();
+    f_handle.close();
+}
 
 
 void TecplotIO::writeBlocks(const std::string &file_name){
@@ -88,9 +80,9 @@ void TecplotIO::writeBlocks(const std::string &file_name){
        double *Y = new double[NumNodes];
        double *Z = new double[NumNodes];
        for(int i=1; i<=NumNodes; ++i){
-           X[i-1] = block_ptr->vertex_coord[3*i];
-           Y[i-1] = block_ptr->vertex_coord[3*i+1];
-           Z[i-1] = block_ptr->vertex_coord[3*i+2];
+           X[i-1] = block_ptr->vertex_coord[i].x;
+           Y[i-1] = block_ptr->vertex_coord[i].y;;
+           Z[i-1] = block_ptr->vertex_coord[i].z;;
        }
        INTEGER4 DIsDouble = 1;  // 双精度浮点
        INTEGER4 DIsSingle = 0;  // 单精度浮点 or 整型？？？
@@ -114,8 +106,8 @@ void TecplotIO::writeBlocks(const std::string &file_name){
        INTEGER4 *FaceLeftElems = new INTEGER4[NumFaces];  // facet 左右网格单元索引
        INTEGER4 *FaceRightElems = new INTEGER4[NumFaces];
        for(int i=1; i<=NumFaces; ++i){
-            FaceLeftElems[i-1] = block_ptr->face_side_cell[2*i];
-            FaceRightElems[i-1] = block_ptr->face_side_cell[2*i+1];
+            FaceLeftElems[i-1] = block_ptr->face_side_cell[i].x;
+            FaceRightElems[i-1] = block_ptr->face_side_cell[i].y;
             // std::cout << FaceLeftElems[i - 1] << " || " << FaceRightElems[i - 1] << std::endl;
        }
        /* Write the face map (created above) using TECPOLYFACE142. */

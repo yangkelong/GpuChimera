@@ -7,8 +7,9 @@ class TecplotIO{
 public:
     std::vector<Block*> blocks_ptr;
     TecplotIO()=default;
-    // void writeLineSegment(std::vector<Point> &points, std::string file_name);  // 线
+    void writeLineSegment(const std::string &file_name, const std::vector<Block::Point> &points);
     void writeFace();  // 面
     void writeBlocks(const std::string &file_name);  // 体 均以多面体方式写出
+
 };
 
