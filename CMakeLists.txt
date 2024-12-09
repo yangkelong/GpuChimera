@@ -16,7 +16,6 @@ project(
 
 
 
-
 # ------------------------------------------------------------------
 # first, include gdt project to do some general configuration stuff
 # ------------------------------------------------------------------
@@ -72,5 +71,4 @@ if(WIN32)
       ${gmp_dir}/lib/libmpfr-4.lib
       )
 endif()
-
 
