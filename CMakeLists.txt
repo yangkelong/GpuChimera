@@ -11,10 +11,14 @@ cmake_minimum_required(VERSION 3.15...3.31)
 project(
   GPUChimera
   VERSION 1.0
-  LANGUAGES CXX
-)
+  LANGUAGES C CXX CUDA)
+
+set(CMAKE_CUDA_ARCHITECTURES 70)
 
 
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # ------------------------------------------------------------------
 # first, include gdt project to do some general configuration stuff
@@ -36,14 +40,18 @@ include_directories(${PROJECT_SOURCE_DIR}/external/boost_1_78_0)
 set(cgal_dir ${PROJECT_SOURCE_DIR}/external/cgal-5.6.1/)
 include_directories(${cgal_dir}/include)
 
+
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/IO)
 # 添加可执行文件
 add_executable(my_target 
+  GridBlock.h
+  DonorSearch.h
   main.cpp
   GridBlock.cpp
   IO/TecplotIO.cpp
   DonorSearch.cpp
-  DonorSearch.h
+  ToWallDistance.h
+  ToWallDistance.cu
   )
 
 # 设置 TECIO 库的安装目录
@@ -72,3 +80,9 @@ if(WIN32)
       )
 endif()
 
+# gpu_wall_tree
+add_subdirectory(${PROJECT_SOURCE_DIR}/GpuUtils/cuda_kdtree)
+target_link_libraries(my_target PUBLIC cudaKDTree)
+
+add_executable(my_cukd_sample mysample.h mysample.cu)
+target_link_libraries(my_cukd_sample cudaKDTree)
