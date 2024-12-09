@@ -18,6 +18,7 @@
 #include "cukd/fcp.h"  // fcp = "find closest point" query
 #include <queue>
 #include <iomanip>
+#include "ToWallDistance.h"
 
 using mydata3 = float3;
 using mydata = float;
@@ -25,28 +26,23 @@ using mydata = float;
 //using mydata = double;
 
 template<typename T3>
-T3* uploadPoints(double* coords, int N) {
+T3* uploadPoints(Point *coords, int N) {
     T3* d_points = 0;
     cudaMallocManaged((char**)&d_points, N * sizeof(*d_points));
     if (!d_points)
         throw std::runtime_error("could not allocate points mem...");
     for (int i = 0; i < N; i++) {
-        d_points[i].x = (mydata) coords[3 * i];
-        d_points[i].y = (mydata) coords[3 * i + 1];
-        d_points[i].z = (mydata) coords[3 * i + 2];
+        d_points[i].x = (mydata) coords[i].x;
+        d_points[i].y = (mydata) coords[i].y;
+        d_points[i].z = (mydata) coords[i].z;
     }
     return d_points;
 }
 
 // 查询host函数, cct
-__global__ void d_fcp(mydata* d_results,
-    mydata3* d_queries,
-    int numQueries,
+__global__ void d_fcp(mydata* d_results, mydata3* d_queries, int numQueries,
     /*! the world bounding box computed by the builder */
-    const cukd::box_t<mydata3>* d_bounds,
-    mydata3* d_nodes,
-    int numNodes,
-    mydata cutOffRadius) {
+    const cukd::box_t<mydata3>* d_bounds, mydata3* d_nodes, int numNodes, mydata cutOffRadius) {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     if (tid >= numQueries)
         return;
@@ -64,9 +60,9 @@ __global__ void d_fcp(mydata* d_results,
 
 // 后续考虑将构建 查询 分开？
 void calWalDist();
-extern "C"  void toWallDistance(double* coords, unsigned int n, double* query_coords, unsigned int numQueries,
+extern "C"  void toWallDistance(Point* coords, unsigned int n, Point* query_coords, unsigned int numQueries,
     double* result_coords) {
-    std::cout << "toWallDistance ..." << std::endl;
+    std::cout << "toWallDistance ..." <<"k-d tree node_num: "<< n<<", query points: "<< numQueries << std::endl;
     using namespace cukd::common;
     cukd::box_t<mydata3>* d_bounds;
     mydata3* d_points = uploadPoints<mydata3>(coords, n);
@@ -84,7 +80,7 @@ extern "C"  void toWallDistance(double* coords, unsigned int n, double* query_co
         << cukd::common::prettyDouble(t1 - t0) << "s" << std::endl;
     // 搜索时的最大半径
     mydata cutOffRadius = std::numeric_limits<mydata>::infinity();
-    mydata3* d_queries = uploadPoints<mydata3>(query_coords, n);
+    mydata3* d_queries = uploadPoints<mydata3>(query_coords, numQueries);
     // allocate memory for the results
     mydata* d_results;
     CUKD_CUDA_CALL(MallocManaged((void**)&d_results, numQueries * sizeof(*d_results)));

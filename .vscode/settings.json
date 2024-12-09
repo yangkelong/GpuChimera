@@ -103,6 +103,7 @@
         "strstream": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "resumable": "cpp"
     }
 }

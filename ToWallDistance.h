@@ -15,7 +15,9 @@
 // limitations under the License.                                           //
 // ======================================================================== //
 #pragma once
+#include "GridBlock.h"
+using Point = Block::Point;
 
-extern "C" void toWallDistance(double *coords, unsigned int n, double*query_coords, unsigned int numQueries,
+extern "C" void toWallDistance(Point *coords, unsigned int n, Point *query_coords, unsigned int numQueries,
     double*result_coords);
 

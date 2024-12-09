@@ -719,8 +719,8 @@ void Block::getCellTriFacet(uint32 cell_id, std::set<uint32>&facet_set) const{
 void Block::calCellDist(){
     cells_dist = new double[cell_num+1];
     // 对物面面元顶点构建 k-d tree, 查询网格单元中心 到物面点云的最近邻点(后续可以加入索引)
-    toWallDistance(reinterpret_cast<double*>(wall_points), wall_point_num,
-                   reinterpret_cast<double*>(cells_center+1), cell_num,
+    toWallDistance(wall_points+1, wall_point_num,
+                   cells_center+1, cell_num,
                    cells_dist+1);
     //for (uint32 cell_id = 1; cell_id <= cell_num; ++cell_id) {
     //    std::cout << "cell_id: " << cell_id << ", dist: " << cells_dist[cell_id];

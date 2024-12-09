@@ -20,7 +20,6 @@
 #include <iomanip>
 #include <random>
 
-//using namespace cukd;
 //using mydata3 = float3;
 //using mydata = float;
 using mydata3 = double3;
@@ -32,8 +31,11 @@ T *generatePoints(int N){
   std::seed_seq seq{g_seed++};
   std::default_random_engine rd(seq);
   std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-  std::uniform_int_distribution<> dist(0, N);
-
+  std::uniform_int_distribution<> int_dist(0, N);
+  std::uniform_real_distribution<> double_dist(-1.0, 1.0); // 生成 [-1.0, 1.0) 区间的 double 类型随机数
+  double mean{0}, sigma{10};
+  std::normal_distribution<> normal_dist(mean, sigma); // mean: 均值, stddev: 标准差
+  auto &dist = double_dist;
   std::cout << "generating " << N << " uniform random points" << std::endl;
   T *d_points = 0;
   cudaMallocManaged((char **)&d_points, N * sizeof(*d_points));
@@ -44,9 +46,37 @@ T *generatePoints(int N){
     d_points[i].x = (mydata)dist(gen);
     d_points[i].y = (mydata)dist(gen);
     d_points[i].z = (mydata)dist(gen);
+    // std::cout << "(" << d_points[i].x << ", " << d_points[i].y << ", " << d_points[i].z << ")" << std::endl;
   }
+
   return d_points;
 }
+
+
+template<typename T>
+T* generatePoints_2(int N) {
+    static int g_seed = 100000;
+    std::seed_seq seq{ g_seed++ };
+    std::default_random_engine rd(seq);
+    std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<> int_dist(0, N);
+    std::uniform_real_distribution<> double_dist(-1000.0, 1000.0); // 生成 [-1.0, 1.0) 区间的 double 类型随机数
+    double mean{ 2 }, sigma{ 100 };
+    std::normal_distribution<> normal_dist(mean, sigma); // mean: 均值, stddev: 标准差
+    auto& dist = normal_dist;
+    std::cout << "generating " << N << " uniform random points" << std::endl;
+    T* d_points = 0;
+    cudaMallocManaged((char**)&d_points, N * sizeof(*d_points));
+    if (!d_points)
+        throw std::runtime_error("could not allocate points mem...");
+    for (int i = 0; i < N; i++) {
+        d_points[i].x = (mydata)dist(gen);
+        d_points[i].y = (mydata)dist(gen);
+        d_points[i].z = (mydata)dist(gen);
+    }
+    return d_points;
+}
+
 
 
 __global__ void d_fcp(mydata *d_results,
@@ -126,7 +156,7 @@ int main(int ac, const char **av){
   // ==================================================================
   // create set of sample query points
   // ==================================================================
-  mydata3 *d_queries = generatePoints<mydata3>(numQueries);
+  mydata3 *d_queries = generatePoints_2<mydata3>(numQueries);
   // allocate memory for the results
   mydata *d_results;
   CUKD_CUDA_CALL(MallocManaged((void **)&d_results, numQueries * sizeof(*d_results)));
