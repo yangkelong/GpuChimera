@@ -31,7 +31,7 @@ void TecplotIO::writeBlocks(const std::string &file_name){
     int block_index = 0;
     // 初始化
     res_code = TECINI142((char *)"XXX",     /* Data Set Title */
-               (char *)"X Y Z iblank",       /* Variable List */
+               (char *)"X Y Z iblank wall_dist",       /* Variable List */
             //    (char *)"X Y Z",       /* Variable List */
                file_name.data(), 
                (char *)".",           /* Scratch Directory */
@@ -53,7 +53,7 @@ void TecplotIO::writeBlocks(const std::string &file_name){
        INTEGER4 NFConns = 0;  /* not used for FEPolyhedron zones */
        INTEGER4 FNMode = 0;  /* not used for FEPolyhedron zones */
        INTEGER4 *PassiveVarArray = NULL;
-       INTEGER4 ValueLocationArray[4] = {1, 1, 1, 0};  // 变量位置（格心 0, 格点 1, NULL=全部格点)  
+       INTEGER4 ValueLocationArray[5] = {1, 1, 1, 0, 0};  // 变量位置（格心 0, 格点 1, NULL=全部格点)  
     //    INTEGER4 *ValueLocationArray = NULL;  // 变量位置（格心 0, 格点 1, NULL=全部格点)  
        
        INTEGER4 *VarShareArray = NULL;
@@ -86,13 +86,17 @@ void TecplotIO::writeBlocks(const std::string &file_name){
        }
        INTEGER4 DIsDouble = 1;  // 双精度浮点
        INTEGER4 DIsSingle = 0;  // 单精度浮点 or 整型？？？
+       double *iblanks = new double[NumElems];
        for(int i=1; i<=NumElems; ++i){
-        block_ptr->cells_iblank[i] = i%2;
+        iblanks[i-1] = (double) (i % 2);
+        //iblanks[i - 1] = (double)(block_ptr->cells_iblank);
        }
        res_code = TECDAT142(&NumNodes, X, &DIsDouble);
        res_code = TECDAT142(&NumNodes, Y, &DIsDouble);
        res_code = TECDAT142(&NumNodes, Z, &DIsDouble);
-       res_code = TECDAT142(&NumElems, block_ptr->cells_iblank +1, &DIsSingle);
+       res_code = TECDAT142(&NumElems, iblanks, &DIsDouble);
+       res_code = TECDAT142(&NumElems, block_ptr->cells_dist+1, &DIsDouble);
+       delete []iblanks;
        INTEGER4 *FaceNodeCounts = new INTEGER4[NumFaces];  // facet 包含顶点个数数组
        for(int i=1; i<=NumFaces; ++i){
            FaceNodeCounts[i-1] = block_ptr->face_ctn_vertex_xadj[i+1]-block_ptr->face_ctn_vertex_xadj[i];

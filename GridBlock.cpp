@@ -1,5 +1,5 @@
 #include "GridBlock.h"
-#include "ToWallDistance.cu"
+#include "ToWallDistance.h"
 
 struct BoundaryCondition {
 	const uint32 wall = 2;
@@ -68,8 +68,9 @@ struct Cell {
 Block::Block(const char *file_name){
     readMesh(file_name);
     buildTriFacetArray();
-    std::cout << "calCellCenter: 111" << std::endl;
     calCellCenter();
+    buildWallPoints();
+    calCellDist();
 }
 
 Block::~Block(){
@@ -90,6 +91,7 @@ Block::~Block(){
     delete []cell_ctn_triface_xadj;
     delete []cell_ctn_triface_adjncy;
     delete []cells_center;
+    delete[]wall_points;
     delete []cells_dist;
 }
 
@@ -642,8 +644,8 @@ void Block::calCellCenter(){
             count += 1;
         }
         cell_center /= count;
-        std::cout<<"cell_id: "<< cell_id;
-        gdt::printVec(cell_center);
+        //std::cout<<"cell_id: "<< cell_id;
+        //gdt::printVec(cell_center);
     }
 }
 
@@ -713,10 +715,41 @@ void Block::getCellTriFacet(uint32 cell_id, std::set<uint32>&facet_set) const{
 }
 
 
-void calCellDist(){
-    cells_dist = new Point[cell_num+1];
+
+void Block::calCellDist(){
+    cells_dist = new double[cell_num+1];
     // 对物面面元顶点构建 k-d tree, 查询网格单元中心 到物面点云的最近邻点(后续可以加入索引)
-    toWallDistance(reinterpret_cast<double*>(vertex_coord+1), vertex_num, 
+    toWallDistance(reinterpret_cast<double*>(wall_points), wall_point_num,
                    reinterpret_cast<double*>(cells_center+1), cell_num,
-                   reinterpret_cast<double*>(cells_dist+1));
+                   cells_dist+1);
+    //for (uint32 cell_id = 1; cell_id <= cell_num; ++cell_id) {
+    //    std::cout << "cell_id: " << cell_id << ", dist: " << cells_dist[cell_id];
+    //    gdt::printVec(cells_center[cell_id]);
+    //}
 }
+
+
+void Block::buildWallPoints() {
+    uint32 point_num = 0;
+    for (uint32 face_id : wall_faces) {
+        point_num += face_ctn_vertex_xadj[face_id + 1] - face_ctn_vertex_xadj[face_id];
+        point_num += 1;  // center
+    }
+    wall_points = new Point[point_num];
+    uint32 index = 0;
+    for (uint32 face_id : wall_faces) {
+        Point center(0, 0, 0);
+        for (uint32 i = face_ctn_vertex_xadj[face_id]; i < face_ctn_vertex_xadj[face_id + 1]; ++i) {
+            const uint32 vertex_id = face_ctn_vertex_adjncy[i];
+            center += vertex_coord[vertex_id];
+            wall_points[index] = vertex_coord[vertex_id];
+            index += 1;
+        }
+        center /= face_ctn_vertex_xadj[face_id + 1] - face_ctn_vertex_xadj[face_id];
+        wall_points[index] = center;
+        index += 1;
+    }
+    wall_point_num = point_num;
+    assert(point_num == index);
+}
+

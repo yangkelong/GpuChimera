@@ -13,7 +13,7 @@ project(
   VERSION 1.0
   LANGUAGES C CXX CUDA)
 
-set(CMAKE_CUDA_ARCHITECTURES 70)
+set(CMAKE_CUDA_ARCHITECTURES 89)
 
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -50,7 +50,7 @@ add_executable(my_target
   GridBlock.cpp
   IO/TecplotIO.cpp
   DonorSearch.cpp
-  ToWallDistance.h
+  ToWallDistance.h 
   ToWallDistance.cu
   )
 
@@ -84,5 +84,5 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/GpuUtils/cuda_kdtree)
 target_link_libraries(my_target PUBLIC cudaKDTree)
 
-add_executable(my_cukd_sample mysample.h mysample.cu)
-target_link_libraries(my_cukd_sample cudaKDTree)
+add_executable(wall_dist ToWallDistance.h ToWallDistance.cu ToWallDistance_main.cpp)
+target_link_libraries(wall_dist cudaKDTree)

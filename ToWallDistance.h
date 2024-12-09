@@ -1,4 +1,5 @@
 // ======================================================================== //
+// ======================================================================== //
 // Copyright 2018-2023 Ingo Wald                                            //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
@@ -14,17 +15,7 @@
 // limitations under the License.                                           //
 // ======================================================================== //
 #pragma once
-#include "cukd/builder.h"
-#include "cukd/fcp.h"  // fcp = "find closest point" query
-#include <queue>
-#include <iomanip>
 
-//using mydata3 = float3;
-//using mydata = float;
-using mydata3 = double3;
-using mydata = double;
-
-
-extern "C" __host__ void toWallDistance(mydata *coords, unsigned int n, mydata *query_coords, unsigned int numQueries,
-                mydata *result_coords);
+extern "C" void toWallDistance(double *coords, unsigned int n, double*query_coords, unsigned int numQueries,
+    double*result_coords);
 

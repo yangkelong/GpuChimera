@@ -8,7 +8,6 @@
 int main(int argc, char *argv[]) {
     Block mesh(argv[1]);
     TecplotIO tec_out;
-    
     Block::Point query_point(2.1, 2.9, 2.5);
     uint32 start_cell = 3;
     uint32 donor_cell = 0;

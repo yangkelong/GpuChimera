@@ -7,14 +7,14 @@ struct TriFacet{
     uint32 twin_facet_id;  // 双胞胎三角面元id
     bool have_twin = false;  // 如果为四边形 facet 切分来, 具有一个双胞胎三角面元
     gdt::vec3i index;  // 3个顶点索引
-    gdt::vec3f normal;  // 法向
+    gdt::vec3d normal;  // 法向
     TriFacet(){}
     ~TriFacet() {}
 };
 
 class Block{
 public:
-    using Point = gdt::vec3f;
+    using Point = gdt::vec3d;
     int vertex_num, face_num, cell_num;
     int tet_num, pyramid_num, wedge_num, hex_num;
     int *cells_iblank;
@@ -55,9 +55,12 @@ public:
     void buildTriFacetArray();
     void getCellTriFacet(uint32 cell_id, std::set<uint32>&facet_set) const;
     // 壁面距离
-    Point *cells_dist;
+    double *cells_dist;
     Point *cells_dist_d;  // _d 后缀 indicate device pointer
     void calCellDist();
+    void buildWallPoints();
+    uint32 wall_point_num;
+    Point *wall_points;
     // 洞切割
     void holoCut();
     // 贡献单元搜索

@@ -19,27 +19,26 @@
 #include <queue>
 #include <iomanip>
 
-//using mydata3 = float3;
-//using mydata = float;
-using mydata3 = double3;
-using mydata = double;
+using mydata3 = float3;
+using mydata = float;
+//using mydata3 = double3;
+//using mydata = double;
 
-template<typename T>
-T* uploadPoints(mydata* coords, int N) {
-    T* d_points = 0;
+template<typename T3>
+T3* uploadPoints(double* coords, int N) {
+    T3* d_points = 0;
     cudaMallocManaged((char**)&d_points, N * sizeof(*d_points));
     if (!d_points)
         throw std::runtime_error("could not allocate points mem...");
     for (int i = 0; i < N; i++) {
-        d_points[i].x = (mydata)coords[3 * i];
-        d_points[i].y = (mydata)coords[3 * i + 1];
-        d_points[i].z = (mydata)coords[3 * i + 2];
+        d_points[i].x = (mydata) coords[3 * i];
+        d_points[i].y = (mydata) coords[3 * i + 1];
+        d_points[i].z = (mydata) coords[3 * i + 2];
     }
     return d_points;
 }
 
 // 查询host函数, cct
-extern "C"
 __global__ void d_fcp(mydata* d_results,
     mydata3* d_queries,
     int numQueries,
@@ -65,11 +64,10 @@ __global__ void d_fcp(mydata* d_results,
 
 // 后续考虑将构建 查询 分开？
 void calWalDist();
-extern "C" __host__ void
-toWallDistance(mydata* coords, unsigned int n, mydata* query_coords, unsigned int numQueries,
-    mydata* result_coords) {
+extern "C"  void toWallDistance(double* coords, unsigned int n, double* query_coords, unsigned int numQueries,
+    double* result_coords) {
+    std::cout << "toWallDistance ..." << std::endl;
     using namespace cukd::common;
-    unsigned int numPoints;
     cukd::box_t<mydata3>* d_bounds;
     mydata3* d_points = uploadPoints<mydata3>(coords, n);
     cudaMallocManaged((void**)&d_bounds, sizeof(cukd::box_t<mydata3>));
@@ -79,14 +77,14 @@ toWallDistance(mydata* coords, unsigned int n, mydata* query_coords, unsigned in
     // ==================================================================
     std::cout << "calling builder..." << std::endl;
     double t0 = cukd::common::getCurrentTime();
-    cukd::buildTree(d_points, numPoints, d_bounds);
+    cukd::buildTree(d_points, n, d_bounds);
     CUKD_CUDA_SYNC_CHECK();
     double t1 = cukd::common::getCurrentTime();
     std::cout << "done building tree, took "
         << cukd::common::prettyDouble(t1 - t0) << "s" << std::endl;
     // 搜索时的最大半径
     mydata cutOffRadius = std::numeric_limits<mydata>::infinity();
-    mydata3* d_queries = uploadPoints<mydata3>(coords, n);
+    mydata3* d_queries = uploadPoints<mydata3>(query_coords, n);
     // allocate memory for the results
     mydata* d_results;
     CUKD_CUDA_CALL(MallocManaged((void**)&d_results, numQueries * sizeof(*d_results)));
@@ -97,7 +95,7 @@ toWallDistance(mydata* coords, unsigned int n, mydata* query_coords, unsigned in
     int bs = 128;
     int nb = cukd::divRoundUp((int)numQueries, bs);
     d_fcp << <nb, bs >> > (d_results, d_queries, numQueries,
-        d_bounds, d_points, numPoints, cutOffRadius);
+        d_bounds, d_points, n, cutOffRadius);
     cudaDeviceSynchronize();
     CUKD_CUDA_SYNC_CHECK();
     t1 = cukd::common::getCurrentTime();
@@ -109,13 +107,11 @@ toWallDistance(mydata* coords, unsigned int n, mydata* query_coords, unsigned in
         << " queries/s" << std::endl;
     // 
     for (int i = 0; i < numQueries; i++) {
-        result_coords[3 * i] = d_queries[i].x;
-        result_coords[3 * i + 1] = d_queries[i].y;
-        result_coords[3 * i + 2] = d_queries[i].z;
+        result_coords[i] = (double) d_results[i];
     }
     cudaFree(d_points);
     cudaFree(d_bounds);
-    cudaFree(d_results);
+    cudaFree(d_queries);
     cudaFree(d_results);
 }
 

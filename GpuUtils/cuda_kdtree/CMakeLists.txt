@@ -15,7 +15,7 @@
 # ======================================================================== #
 
 cmake_policy(SET CMP0048 NEW)
-project(cudaKDTree VERSION 1.0.0 LANGUAGES CXX CUDA)
+project(cudaKDTree VERSION 1.0.0 LANGUAGES C CXX CUDA)
 
 cmake_minimum_required(VERSION 3.16)
 #set(CMAKE_CXX_STANDARD 14)
@@ -158,8 +158,12 @@ set_property(TARGET cudaKDTree PROPERTY PUBLIC CXX_STANDARD 14)
 add_executable(cukd_sample sample.cu)
 target_link_libraries(cukd_sample cudaKDTree)
 
+add_executable(wall_distance ToWallDistance_main.cpp ToWallDistance.h ToWallDistance.cu)
+target_link_libraries(wall_distance cudaKDTree)
+
 # # 编译 壁面距离计算部分
-# add_library(gpu_wall_dist ToWallDistance.cu)
+# 如果要将 cuda 代码编译为静态库 或者 动态库 可能要用分离编译
+# add_library(gpu_wall_dist ToWallDistance.h ToWallDistance.cu)
 # target_link_libraries(gpu_wall_dist cudaKDTree)
 
 # ==================================================================
