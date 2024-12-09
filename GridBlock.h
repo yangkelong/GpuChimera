@@ -54,4 +54,12 @@ public:
     void calCellCenter(); 
     void buildTriFacetArray();
     void getCellTriFacet(uint32 cell_id, std::set<uint32>&facet_set) const;
+    // 壁面距离
+    Point *cells_dist;
+    Point *cells_dist_d;  // _d 后缀 indicate device pointer
+    void calCellDist();
+    // 洞切割
+    void holoCut();
+    // 贡献单元搜索
+    void donorSearch();
 };

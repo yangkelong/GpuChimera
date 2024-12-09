@@ -1,4 +1,5 @@
 #include "GridBlock.h"
+#include "ToWallDistance.cu"
 
 struct BoundaryCondition {
 	const uint32 wall = 2;
@@ -89,6 +90,7 @@ Block::~Block(){
     delete []cell_ctn_triface_xadj;
     delete []cell_ctn_triface_adjncy;
     delete []cells_center;
+    delete []cells_dist;
 }
 
 // 网格读取成功返回0
@@ -711,4 +713,10 @@ void Block::getCellTriFacet(uint32 cell_id, std::set<uint32>&facet_set) const{
 }
 
 
-
+void calCellDist(){
+    cells_dist = new Point[cell_num+1];
+    // 对物面面元顶点构建 k-d tree, 查询网格单元中心 到物面点云的最近邻点(后续可以加入索引)
+    toWallDistance(reinterpret_cast<double*>(vertex_coord+1), vertex_num, 
+                   reinterpret_cast<double*>(cells_center+1), cell_num,
+                   reinterpret_cast<double*>(cells_dist+1));
+}
