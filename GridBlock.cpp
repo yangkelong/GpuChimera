@@ -730,26 +730,32 @@ void Block::calCellDist(){
 
 
 void Block::buildWallPoints() {
-    uint32 point_num = 0;
+    
+    std::unordered_set<uint32> wall_vertex_set;
     for (uint32 face_id : wall_faces) {
-        point_num += face_ctn_vertex_xadj[face_id + 1] - face_ctn_vertex_xadj[face_id];
-        point_num += 1;  // center
+        for (uint32 i = face_ctn_vertex_xadj[face_id]; i < face_ctn_vertex_xadj[face_id + 1]; ++i){
+            const uint32 vertex_id = face_ctn_vertex_adjncy[i]; 
+            wall_vertex_set.insert(vertex_id);
+        }
     }
+    // 壁面面元顶点 + 中心
+    const uint32 point_num = wall_vertex_set.size() + wall_faces.size();
     wall_points = new Point[point_num];
+    wall_point_num = point_num;
     uint32 index = 0;
-    for (uint32 face_id : wall_faces) {
+    for (const uint32 face_id : wall_faces) {
         Point center(0, 0, 0);
         for (uint32 i = face_ctn_vertex_xadj[face_id]; i < face_ctn_vertex_xadj[face_id + 1]; ++i) {
             const uint32 vertex_id = face_ctn_vertex_adjncy[i];
             center += vertex_coord[vertex_id];
-            wall_points[index] = vertex_coord[vertex_id];
-            index += 1;
         }
         center /= face_ctn_vertex_xadj[face_id + 1] - face_ctn_vertex_xadj[face_id];
         wall_points[index] = center;
         index += 1;
     }
-    wall_point_num = point_num;
-    assert(point_num == index);
+    for (const uint32 vertex_id : wall_vertex_set) {
+        wall_points[index] = vertex_coord[vertex_id];
+        index += 1;
+    }
 }
 
